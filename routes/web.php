@@ -17,11 +17,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
+Route::get('/', function () {
+    return redirect()->route('login');
+});
 
-Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
 Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/login/post', [AuthController::class, 'login_post'])->name('login_post');
 
@@ -29,10 +28,11 @@ Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
 Route::group(['middleware' => ['auth', 'checkRole:admin,guest']], function(){
+    Route::get('/dashboard/index', [DashboardController::class, 'index'])->name('dashboard.index');
 
-    Route::get('/unit', [UnitController::class, 'index'])->name('unit.index');
+    Route::get('/unit/index', [UnitController::class, 'index'])->name('unit.index');
 
-    Route::get('/daily-activity', [DailyActivityController::class, 'index'])->name('dailyactivity.index');
+    Route::get('/daily-activity/index', [DailyActivityController::class, 'index'])->name('dailyactivity.index');
     Route::post('/daily-activity/insert', [DailyActivityController::class, 'insert'])->name('dailyactivity.insert');
 
 });

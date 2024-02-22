@@ -17,6 +17,7 @@ use App\Models\Report;
 use App\Models\Status;
 use App\Models\Unit;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -114,6 +115,8 @@ class DailyActivityController extends Controller
         $array = json_decode($request->action_by, true);
         $collection = collect($array);
         $result = $collection->pluck('value')->implode(', ');
+
+        $activity_by_contract = ActivityByContract::where('id', $request->activity_by_contract_id)->first();
         try {
             $dailyActivity = new DailyActivity;
 
@@ -121,7 +124,7 @@ class DailyActivityController extends Controller
             $dailyActivity->code_id = $request->code_id;
             $dailyActivity->location_id = $request->location_id;
             if($request->time != null){
-                $dailyActivity->time = date('Y-m-d ').$request->time;
+                $dailyActivity->time = $request->time;
             }
             $dailyActivity->report_id = $request->report_id;
             $dailyActivity->date_action = $request->date_action;
@@ -132,50 +135,51 @@ class DailyActivityController extends Controller
             $dailyActivity->action_problem_id = $request->action_problem_id;
             $dailyActivity->activity_by_contract_id = $request->activity_by_contract_id;
             if($request->arrived != null){
-                $dailyActivity->arrived = date('Y-m-d ').$request->arrived;
+                $dailyActivity->arrived = $request->arrived;
             }
+
             if($request->start != null){
-                $dailyActivity->start = date('Y-m-d ').$request->start;
+                $dailyActivity->start = $request->start;
             }
             if($request->finish != null){
-                $dailyActivity->finish = date('Y-m-d ').$request->finish;
+                $dailyActivity->finish = $request->finish;
             }
             $dailyActivity->status_id = $request->status_id;
             $dailyActivity->action_by = $result;
             $dailyActivity->noregistrasi_id = $request->noregistrasi_id;
             if($request->start_delay1 != null){
-                $dailyActivity->start_delay1 = date('Y-m-d ').$request->start_delay1;
+                $dailyActivity->start_delay1 = $request->start_delay1;
             }
             if($request->stop_delay1 != null){
-                $dailyActivity->stop_delay1 = date('Y-m-d ').$request->stop_delay1;
+                $dailyActivity->stop_delay1 = $request->stop_delay1;
             }
             $dailyActivity->reason_delay1_id = $request->reason_delay1_id;
             if($request->start_delay2 != null){
-                $dailyActivity->start_delay2 = date('Y-m-d ').$request->start_delay2;
+                $dailyActivity->start_delay2 = $request->start_delay2;
             }
             if($request->stop_delay2 != null){
-                $dailyActivity->stop_delay2 = date('Y-m-d ').$request->stop_delay2;
+                $dailyActivity->stop_delay2 = $request->stop_delay2;
             }
             $dailyActivity->reason_delay2_id = $request->reason_delay2_id;
             if($request->start_delay3 != null){
-                $dailyActivity->start_delay3 = date('Y-m-d ').$request->start_delay3;
+                $dailyActivity->start_delay3 = $request->start_delay3;
             }
             if($request->stop_delay3 != null){
-                $dailyActivity->stop_delay3 = date('Y-m-d ').$request->stop_delay3;
+                $dailyActivity->stop_delay3 = $request->stop_delay3;
             }
             $dailyActivity->reason_delay3_id = $request->reason_delay3_id;
             if($request->start_delay4 != null){
-                $dailyActivity->start_delay4 = date('Y-m-d ').$request->start_delay4;
+                $dailyActivity->start_delay4 = $request->start_delay4;
             }
             if($request->stop_delay4 != null){
-                $dailyActivity->stop_delay4 = date('Y-m-d ').$request->stop_delay4;
+                $dailyActivity->stop_delay4 = $request->stop_delay4;
             }
             $dailyActivity->reason_delay4_id = $request->reason_delay4_id;
             if($request->start_delay5 != null){
-                $dailyActivity->start_delay5 = date('Y-m-d ').$request->start_delay5;
+                $dailyActivity->start_delay5 = $request->start_delay5;
             }
             if($request->stop_delay5 != null){
-                $dailyActivity->stop_delay5 = date('Y-m-d ').$request->stop_delay5;
+                $dailyActivity->stop_delay5 = $request->stop_delay5;
             }
             $dailyActivity->reason_delay5_id = $request->reason_delay5_id;
             $dailyActivity->used_parts = $request->used_parts;
@@ -183,7 +187,43 @@ class DailyActivityController extends Controller
             $dailyActivity->remarks = $request->remarks;
             $dailyActivity->create_by = Auth::user()->id;
 
-            $dailyActivity->save();
+            $delayfirst = Carbon::createFromFormat('H:i', $request->start);
+            $delaylast = Carbon::createFromFormat('H:i', $request->arrived);
+            $dailyActivity->delay = $delayfirst->subHours($delaylast->hour)->subMinutes($delaylast->minute);
+
+            // $responsefirst = Carbon::createFromFormat('H:i', $request->arrived);
+            // $responselast = Carbon::createFromFormat('H:i', $request->time);
+            // $dailyActivity->response = $responsefirst->subHours($responselast->hour)->subMinutes($responselast->minute);
+
+            // $durationfirst = Carbon::createFromFormat('H:i', $request->finish);
+            // $durationlast = Carbon::createFromFormat('H:i', $request->start);
+            // $dailyActivity->duration = $durationfirst->subHours($durationlast->hour)->subMinutes($durationlast->minute);
+
+            // $dailyActivity->batas_waktu_pengerjaan = $activity_by_contract->bataswaktu;
+
+            // $duration_delay1first = Carbon::createFromFormat('H:i', $request->start_delay1);
+            // $duration_delay1last = Carbon::createFromFormat('H:i', $request->stop_delay1);
+            // $dailyActivity->duration_delay1 = $duration_delay1first->subHours($duration_delay1last->hour)->subMinutes($duration_delay1last->minute);
+
+            // $duration_delay2first = Carbon::createFromFormat('H:i', $request->start_delay2);
+            // $duration_delay2last = Carbon::createFromFormat('H:i', $request->stop_delay2);
+            // $dailyActivity->duration_delay2 = $duration_delay2first->subHours($duration_delay2last->hour)->subMinutes($duration_delay2last->minute);
+
+            // $duration_delay3first = Carbon::createFromFormat('H:i', $request->start_delay3);
+            // $duration_delay3last = Carbon::createFromFormat('H:i', $request->stop_delay3);
+            // $dailyActivity->duration_delay3 = $duration_delay3first->subHours($duration_delay3last->hour)->subMinutes($duration_delay3last->minute);
+
+            // $duration_delay4first = Carbon::createFromFormat('H:i', $request->start_delay4);
+            // $duration_delay4last = Carbon::createFromFormat('H:i', $request->stop_delay4);
+            // $dailyActivity->duration_delay4 = $duration_delay4first->subHours($duration_delay4last->hour)->subMinutes($duration_delay4last->minute);
+
+            // $duration_delay5first = Carbon::createFromFormat('H:i', $request->start_delay5);
+            // $duration_delay5last = Carbon::createFromFormat('H:i', $request->stop_delay5);
+            // $dailyActivity->duration_delay5 = $duration_delay5first->subHours($duration_delay5last->hour)->subMinutes($duration_delay5last->minute);
+
+            // $dailyActivity->total_delay = $dailyActivity->duration_delay1 + $dailyActivity->duration_delay2 + $dailyActivity->duration_delay3 + $dailyActivity->duration_delay4 + $dailyActivity->duration_delay5;
+
+            // $dailyActivity->save();
 
             return redirect()->back()->with('success', 'Daily activities saved successfully');
         } catch (\Throwable $th) {
